@@ -41,9 +41,7 @@ const tituloFormulario = document.getElementById("tituloFormulario");
 // ========================================
 
 document.addEventListener("DOMContentLoaded", () => {
-
     filtrarLembretes();
-
 });
 
 // ========================================
@@ -112,10 +110,9 @@ async function filtrarLembretes() {
 // ========================================
 
 async function criarLembrete() {
-
     try {
 
-        const dados = {
+        const dados = { 
             descricao: descricao.value
         };
 
@@ -123,11 +120,9 @@ async function criarLembrete() {
             `${API_URL}/lembretes`,
             {
                 method: "POST",
-
                 headers: {
                     "Content-Type": "application/json"
                 },
-
                 body: JSON.stringify(dados)
             }
         );
@@ -136,21 +131,17 @@ async function criarLembrete() {
             throw new Error("Erro ao criar lembrete.");
         }
 
-        mostrarToast(
-            "Lembrete criado com sucesso!"
-        );
+        mostrarToast("Lembrete criado com sucesso!");
 
         fecharFormulario();
 
-        await carregarLembretes();
+        await filtrarLembretes();
 
     } catch (error) {
 
         console.error(error);
 
-        mostrarToast(
-            "Não foi possível criar o lembrete."
-        );
+        mostrarToast("Não foi possível criar o lembrete.");
     }
 }
 
@@ -158,7 +149,6 @@ async function criarLembrete() {
 // ========================================
 // GET /lembretes/{id}
 // ========================================
-
 async function buscarLembrete(id) {
 
     try {
@@ -176,8 +166,7 @@ async function buscarLembrete(id) {
         lembreteId.value = lembrete.id;
         descricao.value = lembrete.descricao;
 
-        tituloFormulario.textContent =
-            "Editar lembrete";
+        tituloFormulario.textContent = "Editar lembrete";
 
         formulario.classList.remove("hidden");
 
@@ -227,7 +216,7 @@ async function atualizarLembrete() {
 
         fecharFormulario();
 
-        await carregarLembretes();
+        await filtrarLembretes();
 
     } catch (error) {
 
@@ -270,7 +259,7 @@ async function excluirLembrete(id) {
             "Lembrete excluído com sucesso!"
         );
 
-        await carregarLembretes();
+        await filtrarLembretes();
 
     } catch (error) {
 
