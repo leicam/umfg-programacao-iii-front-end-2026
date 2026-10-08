@@ -26,6 +26,7 @@ const tamanhoPagina = document.getElementById("tamanhoPagina");
 const totalRegistros = document.getElementById("totalRegistros");
 const paginaAtualElemento = document.getElementById("paginaAtual");
 
+const btnImprimir = document.getElementById("btnImprimir");
 const btnNovo = document.getElementById("btnNovo");
 const btnCancelar = document.getElementById("btnCancelar");
 const btnFiltrar = document.getElementById("btnFiltrar");
@@ -39,7 +40,6 @@ const tituloFormulario = document.getElementById("tituloFormulario");
 // ========================================
 // INICIALIZAÇÃO
 // ========================================
-
 document.addEventListener("DOMContentLoaded", () => {
     filtrarLembretes();
 });
@@ -68,8 +68,6 @@ async function filtrarLembretes() {
         params.append("DataAtualizacaoInicial", dataFormatada);
         params.append("DataAtualizacaoFinal", dataFormatada);
         
-        console.log('filtro-> params', params);
-
         const response = await fetch(
             `${API_URL}/lembretes/filtro?${params}`
         );
@@ -104,11 +102,58 @@ async function filtrarLembretes() {
     }
 }
 
+// ========================================
+// GET /lembretes/imprimir
+// ========================================
+async function imprimirLembretes() {
+    try {
+        const dataAtual = new Date();
+        const dataFormatada = dataAtual.getFullYear() + "-" +
+            String(dataAtual.getMonth() + 1).padStart(2, "0") + "-" +
+            String(dataAtual.getDate()).padStart(2, "0");
+
+        const params = new URLSearchParams();
+
+        params.append("NumeroPagina", paginaAtual);
+        params.append("TamanhoPagina", tamanhoPagina.value);
+        params.append("Descricao", filtroDescricao.value);
+
+        /*TODO: implementar todos os filtros no html*/
+        params.append("Ordem", "DataCadastro");
+        params.append("Direcao", "DESC");
+        params.append("DataCadastroInicial", dataFormatada);
+        params.append("DataCadastroFinal", dataFormatada);
+        params.append("DataAtualizacaoInicial", dataFormatada);
+        params.append("DataAtualizacaoFinal", dataFormatada);
+
+        const response = await fetch(
+            `${API_URL}/lembretes/imprimir?${params}`
+        );
+
+        if (!response.ok) {
+            throw new Error("Erro ao filtrar lembretes.");
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "relatorio-lembretes.pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) {
+        console.error(error);
+        mostrarToast("Erro ao realizar o filtro.");
+    }
+}
 
 // ========================================
 // POST /lembretes
 // ========================================
-
 async function criarLembrete() {
     try {
 
@@ -145,7 +190,6 @@ async function criarLembrete() {
     }
 }
 
-
 // ========================================
 // GET /lembretes/{id}
 // ========================================
@@ -180,11 +224,9 @@ async function buscarLembrete(id) {
     }
 }
 
-
 // ========================================
 // PUT /lembretes/{id}
 // ========================================
-
 async function atualizarLembrete() {
 
     try {
@@ -228,7 +270,6 @@ async function atualizarLembrete() {
     }
 }
 
-
 // ========================================
 // DELETE /lembretes/{id}
 // ========================================
@@ -270,7 +311,6 @@ async function excluirLembrete(id) {
         );
     }
 }
-
 
 // ========================================
 // RENDERIZAÇÃO
@@ -339,14 +379,16 @@ function renderizarLembretes(lembretes) {
     });
 }
 
-
 // ========================================
 // FORMULÁRIO
 // ========================================
+btnImprimir.addEventListener("click", () => {
+    imprimirLembretes();
+});
+
 btnNovo.addEventListener("click", () => {
     abrirFormularioNovo();
 });
-
 
 btnCancelar.addEventListener("click", () => {
     fecharFormulario();
@@ -367,7 +409,6 @@ formLembrete.addEventListener("submit", async (event) => {
         await criarLembrete();
     }
 });
-
 
 function abrirFormularioNovo() {
     lembreteId.value = "";
@@ -429,7 +470,6 @@ function formatarData(data) {
         "pt-BR"
     );
 }
-
 
 function mostrarToast(mensagem) {
     const toast = document.getElementById("toast");
