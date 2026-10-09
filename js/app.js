@@ -26,6 +26,7 @@ const tamanhoPagina = document.getElementById("tamanhoPagina");
 const totalRegistros = document.getElementById("totalRegistros");
 const paginaAtualElemento = document.getElementById("paginaAtual");
 
+const btnImprimir = document.getElementById("btnImprimir");
 const btnNovo = document.getElementById("btnNovo");
 const btnCancelar = document.getElementById("btnCancelar");
 const btnFiltrar = document.getElementById("btnFiltrar");
@@ -104,6 +105,62 @@ async function filtrarLembretes() {
     }
 }
 
+// ========================================
+// GET /lembretes/imprimir
+// ========================================
+async function imprimirLembretes() {
+    try {
+        const dataAtual = new Date();
+        const dataFormatada = dataAtual.getFullYear() + "-" +
+            String(dataAtual.getMonth() + 1).padStart(2, "0") + "-" +
+            String(dataAtual.getDate()).padStart(2, "0");
+
+        const params = new URLSearchParams();
+
+        params.append("NumeroPagina", paginaAtual);
+        params.append("TamanhoPagina", tamanhoPagina.value);
+        params.append("Descricao", filtroDescricao.value);
+
+        /*TODO: implementar todos os filtros no html*/
+        params.append("Ordem", "DataCadastro");
+        params.append("Direcao", "DESC");
+        params.append("DataCadastroInicial", dataFormatada);
+        params.append("DataCadastroFinal", dataFormatada);
+        params.append("DataAtualizacaoInicial", dataFormatada);
+        params.append("DataAtualizacaoFinal", dataFormatada);
+
+        const response = await fetch(
+            `${API_URL}/lembretes/imprimir?${params}`
+        );
+
+        if (!response.ok) {
+            throw new Error("Erro ao filtrar lembretes.");
+        }
+        
+        console.log("teste");
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "relatorio-lembretes.pdf";
+
+        document.body.appendChild(a)
+        a.click();
+        a.remove();
+
+        setTimeout(() => URL.revokeObjectURL(url), 10000)
+
+    } catch (error) {
+
+        console.error(error);
+
+        mostrarToast(
+            "Erro ao realizar o filtro."
+        );
+    }
+}
 
 // ========================================
 // POST /lembretes
@@ -343,6 +400,11 @@ function renderizarLembretes(lembretes) {
 // ========================================
 // FORMULÁRIO
 // ========================================
+btnImprimir.addEventListener("click", () => {
+    console.log('click-> imprimir lembretes');
+    imprimirLembretes();
+});
+
 btnNovo.addEventListener("click", () => {
     abrirFormularioNovo();
 });
